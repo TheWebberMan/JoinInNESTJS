@@ -1,3 +1,11 @@
 export class CreateUserDto {
-    "name": string;
+  name: string;
+  gender: "MALE" | "FEMALE" | "OTHER";
+  age: number;
+  email: string;
+  profile_standing: "BANNED" | "OKAY";
+  created_at: Date;
+  deleted_at: Date;
+  password: string;
+  reports: number;
 }

@@ -3,6 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import { Driver } from 'neo4j-driver';
 import { User } from './users.entity.js';
 import { CreateUserDto } from './dto/create-user.dto.js';
+import { UpdateUserDto } from './dto/update-user.dto.js';
 
 @Injectable()
 export class UsersRepository {
@@ -103,6 +104,65 @@ async create(dto: CreateUserDto): Promise<User> {
     await session.close();
   }
 }
+
+async update(
+    id: number,
+    dto: UpdateUserDto,
+  ): Promise<User | null> {
+    const session = this.driver.session({
+    database: this.config.getOrThrow<string>('NEO4J_DATABASE'),
+  });
+
+    try {
+      const properties = Object.fromEntries(
+        Object.entries(dto).filter(
+          ([, value]) => value !== undefined,
+        ),
+      );
+
+      const result = await session.run(
+        `
+        MATCH (a:User {id: $id})
+        SET a += $properties
+        RETURN a
+        `,
+        { id, properties },
+      );
+
+      if (result.records.length === 0) {
+        return null;
+      }
+
+      return this.mapUser(
+        result.records[0].get('a').properties,
+      );
+    } finally {
+      await session.close();
+    }
+  }
+
+
+async delete(id: number): Promise<boolean> {
+    const session = this.driver.session({
+    database: this.config.getOrThrow<string>('NEO4J_DATABASE'),
+  });
+
+    try {
+      const result = await session.run(
+        `
+        MATCH (a:User {id: $id})
+        WITH a, a.id AS deletedId
+        DETACH DELETE a
+        RETURN deletedId
+        `,
+        { id },
+      );
+
+      return result.records.length > 0;
+    } finally {
+      await session.close();
+    }
+  }
 
 private mapUser(properties: any): User {
   return {

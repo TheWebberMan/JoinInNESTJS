@@ -18,7 +18,6 @@ constructor(
 
 
 async authenticate(dto: LoginAuthDto): Promise<AuthResult> {
-
   const user = await this.usersRepository.findByEmail(dto.email)
   if (!user) {
     throw new UnauthorizedException('Invalid email or password');
@@ -34,13 +33,12 @@ async authenticate(dto: LoginAuthDto): Promise<AuthResult> {
   }
 
   return this.signIn(dto)
-  
 }
 
 async signIn(dto: LoginAuthDto): Promise<AuthResult>{
   const user = await this.usersRepository.findByEmail(dto.email)
-  if(!user){
-    throw new ConflictException('A user with this email already exists');
+  if(!user){ // THIS CHECK HAS TO BE HERE OR THE ATTRIBUTES IN THE TOKENPAYLOAD WILL HAVE AN ERROR
+    throw new ConflictException('Invalid email or password');
   }
   
   const tokenPayload ={ // THIS PART IS SAVED IN THE JWT

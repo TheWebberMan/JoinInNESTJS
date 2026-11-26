@@ -14,8 +14,8 @@ constructor(
     return this.usersRepository.findAll();
   }
 
-  async findOne(id: number): Promise<User> {
-    const user = await this.usersRepository.findOne(id);
+  async findByID(id: number): Promise<User> {
+    const user = await this.usersRepository.findByID(id);
 
     if (!user) {
       throw new NotFoundException('User not found');

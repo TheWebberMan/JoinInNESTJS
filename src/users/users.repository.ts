@@ -32,7 +32,7 @@ export class UsersRepository {
     }
 }
 
-async findOne(id: number): Promise<User | null> {
+async findByID(id: number): Promise<User | null> {
     const session = this.driver.session({
   database: this.config.getOrThrow<string>('NEO4J_DATABASE'),
 });
@@ -57,6 +57,56 @@ async findOne(id: number): Promise<User | null> {
       await session.close();
     }
   }
+
+  async findByEmail(email: string): Promise<User | null> {
+  const session = this.driver.session({
+    database: this.config.getOrThrow<string>('NEO4J_DATABASE'),
+  });
+
+  try {
+    const result = await session.executeRead(async (tx) => {
+      return await tx.run(
+        `
+        MATCH (u:User {email: $email})
+        RETURN u
+        LIMIT 1
+        `,
+        { email },
+      );
+    });
+
+    if (result.records.length === 0) {
+      return null;
+    }
+
+    return this.mapUser(result.records[0].get('u').properties);
+  } finally {
+    await session.close();
+  }
+}
+
+  async userExists(email: string): Promise<boolean> {
+  const session = this.driver.session({
+    database: this.config.getOrThrow<string>('NEO4J_DATABASE'),
+  });
+
+  try {
+    const result = await session.executeRead(async (tx) => {
+      return await tx.run(
+        `
+        MATCH (u:User {email: $email})
+        RETURN u
+        LIMIT 1
+        `,
+        { email },
+      );
+    });
+
+    return result.records.length > 0;
+  } finally {
+    await session.close();
+  }
+}
 
 
 async create(dto: CreateUserDto): Promise<User> {

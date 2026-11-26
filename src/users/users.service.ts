@@ -15,13 +15,13 @@ constructor(
   }
 
   async findOne(id: number): Promise<User> {
-    const animal = await this.usersRepository.findOne(id);
+    const user = await this.usersRepository.findOne(id);
 
-    if (!animal) {
+    if (!user) {
       throw new NotFoundException('User not found');
     }
 
-    return animal;
+    return user;
   }
 
    async create(dto: CreateUserDto): Promise<User> {

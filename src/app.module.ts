@@ -4,12 +4,14 @@ import { AppController } from './app.controller.js';
 import { AppService } from './app.service.js';
 import { Neo4jModule } from './database/neo4j.module.js';
 import { UsersModule } from './users/users.module.js';
+import { AuthModule } from './auth/auth.module.js';
 
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
     Neo4jModule,
     UsersModule,
+    AuthModule,
   ],
   controllers: [AppController],
   providers: [AppService],

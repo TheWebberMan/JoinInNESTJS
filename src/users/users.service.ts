@@ -3,6 +3,7 @@ import { UsersRepository } from './users.repository.js';
 import { User } from './users.entity.js';
 import { CreateUserDto } from './dto/create-user.dto.js';
 import { UpdateUserDto } from './dto/update-user.dto.js';
+import { UserDto } from './dto/user.dto.js';
 
 @Injectable()
 export class UsersService {
@@ -24,14 +25,14 @@ constructor(
     return user;
   }
 
-   async create(dto: CreateUserDto): Promise<User> {
+   async create(dto: CreateUserDto): Promise<UserDto> {
     return this.usersRepository.create(dto);
   }
 
   async update(
     id: number,
     dto: UpdateUserDto,
-  ): Promise<User> {
+  ): Promise<UserDto> {
     const user = await this.usersRepository.update(id, dto);
 
     if (!user) {

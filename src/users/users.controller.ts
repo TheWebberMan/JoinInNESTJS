@@ -1,7 +1,8 @@
-import { Body, Controller, Get, Post, Patch, Delete, Param, ParseIntPipe, ValidationPipe } from '@nestjs/common';
+import { Body, Controller, Get, Post, Patch, Delete, Param, ParseIntPipe, ValidationPipe, UseGuards, Request } from '@nestjs/common';
 import { UsersService } from './users.service.js'
 import { CreateUserDto } from "./dto/create-user.dto.js"
 import { UpdateUserDto } from "./dto/update-user.dto.js"
+import { AuthGuard } from '../auth/guards/auth.guard.js';
 
 @Controller('users')
 export class UsersController {
@@ -12,7 +13,6 @@ export class UsersController {
     findAll() {
         return this.usersService.findAll()
     }
-
     @Get(':id')
     findByID(@Param('id', ParseIntPipe) id: number) {
         return  this.usersService.findByID(id)

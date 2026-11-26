@@ -4,6 +4,7 @@ import { Driver } from 'neo4j-driver';
 import { User } from './users.entity.js';
 import { CreateUserDto } from './dto/create-user.dto.js';
 import { UpdateUserDto } from './dto/update-user.dto.js';
+import { UserDto } from './dto/user.dto.js';
 
 @Injectable()
 export class UsersRepository {
@@ -85,7 +86,7 @@ async findByID(id: number): Promise<User | null> {
   }
 }
 
-  async userExists(email: string): Promise<boolean> {
+  async userExistsByEmail(email: string): Promise<boolean> {
   const session = this.driver.session({
     database: this.config.getOrThrow<string>('NEO4J_DATABASE'),
   });
@@ -108,8 +109,31 @@ async findByID(id: number): Promise<User | null> {
   }
 }
 
+async userExistsByName(name: string): Promise<boolean> {
+  const session = this.driver.session({
+    database: this.config.getOrThrow<string>('NEO4J_DATABASE'),
+  });
 
-async create(dto: CreateUserDto): Promise<User> {
+  try {
+    const result = await session.executeRead(async (tx) => {
+      return await tx.run(
+        `
+        MATCH (u:User {name: $name})
+        RETURN u
+        LIMIT 1
+        `,
+        { name },
+      );
+    });
+
+    return result.records.length > 0;
+  } finally {
+    await session.close();
+  }
+}
+
+
+async create(dto: CreateUserDto): Promise<UserDto> {
   const session = this.driver.session({
     database: this.config.getOrThrow<string>('NEO4J_DATABASE'),
   });
@@ -149,7 +173,7 @@ async create(dto: CreateUserDto): Promise<User> {
       return created.records[0].get('a').properties;
     });
 
-    return this.mapUser(result);
+    return this.mapUserDto(result);
   } finally {
     await session.close();
   }
@@ -158,7 +182,7 @@ async create(dto: CreateUserDto): Promise<User> {
 async update(
     id: number,
     dto: UpdateUserDto,
-  ): Promise<User | null> {
+  ): Promise<UserDto | null> {
     const session = this.driver.session({
     database: this.config.getOrThrow<string>('NEO4J_DATABASE'),
   });
@@ -183,7 +207,7 @@ async update(
         return null;
       }
 
-      return this.mapUser(
+      return this.mapUserDto(
         result.records[0].get('a').properties,
       );
     } finally {
@@ -225,6 +249,16 @@ private mapUser(properties: any): User {
     created_at: new Date(properties.created_at.toString()),
     password: properties.password,
     reports: this.toNumber(properties.reports),
+  };
+}
+
+private mapUserDto(properties: any): UserDto {
+  return {
+    id: this.toNumber(properties.id),
+    name: properties.name,
+    gender: properties.gender,
+    age: this.toNumber(properties.age),
+    email: properties.email,
   };
 }
 

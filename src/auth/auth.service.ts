@@ -7,7 +7,7 @@ import { LoginAuthDto } from "./dto/login-auth.dto.js"
 import { JwtService } from "@nestjs/jwt"
 import * as bcrypt from 'bcrypt';
 
-type AuthResult = { accesToken: string; userID: number; username: string}
+type AuthResult = { accesToken: string; id: number; email: string, name: string} // THIS PART IS RETURNED WHEN THE USER LOGS IN
 
 @Injectable()
 export class AuthService {
@@ -17,14 +17,14 @@ constructor(
     ) {}
 
 
-async login(dto: LoginAuthDto): Promise<UserDto> {
-  const user = await this.usersRepository.findByEmail(dto.email);
+async authenticate(dto: LoginAuthDto): Promise<AuthResult> {
 
-    if (!user) {
+  const user = await this.usersRepository.findByEmail(dto.email)
+  if (!user) {
     throw new UnauthorizedException('Invalid email or password');
   }
 
-   const isPasswordValid = await bcrypt.compare(
+  const isPasswordValid = await bcrypt.compare(
     dto.password,
     user.password,
   );
@@ -33,57 +33,37 @@ async login(dto: LoginAuthDto): Promise<UserDto> {
     throw new UnauthorizedException('Invalid email or password');
   }
 
-   return {
-    id: user.id,
-    name: user.name,
-    gender: user.gender,
-    age: user.age,
-    email: user.email,
-  };
-
-}
-
-//TODO EDIT USER AND USERDTO
-//TODO REMOVE ONE VALIDATION
-//TODO COMBINE AUTHENTICATE AND LOGIN
-//TODO JWT SECRET IN .ENV
-async authenticate(dto: LoginAuthDto): Promise<AuthResult> {
-  const user = this.usersRepository.userExists(dto.email)
-  if (!user) {
-    throw new ConflictException('A user with this email already exists');
-  }
-
-  const validatedUser = await this.usersRepository.findByEmail(dto.email)
-
-
-  if(!validatedUser){
-    throw new ConflictException('A user with this email already exists');
-  }
   return this.signIn(dto)
   
 }
 
 async signIn(dto: LoginAuthDto): Promise<AuthResult>{
-  const validatedUser = await this.usersRepository.findByEmail(dto.email)
-  if(!validatedUser){
+  const user = await this.usersRepository.findByEmail(dto.email)
+  if(!user){
     throw new ConflictException('A user with this email already exists');
   }
-  const tokenPayload ={
-    sub: validatedUser.id,
-    username: validatedUser.name
+  
+  const tokenPayload ={ // THIS PART IS SAVED IN THE JWT
+    sub: user.id,
+    name: user.name,
+    email:user.email
   }
 
   const accesToken = await this.jwtService.signAsync(tokenPayload)
 
-  return {accesToken, username: validatedUser.name, userID: validatedUser.id}
+  return {accesToken,  id: user.id, email: user.email, name: user.name,}
 }
 
 
 
 
 async create(dto: CreateUserDto): Promise<UserDto> {
-  if (await this.usersRepository.userExists(dto.email)) {
+  if (await this.usersRepository.userExistsByEmail(dto.email)) {
     throw new ConflictException('A user with this email already exists');
+  }
+
+  if (await this.usersRepository.userExistsByName(dto.name)) {
+    throw new ConflictException('A user with this username already exists');
   }
 
   const salt = bcrypt.genSaltSync()

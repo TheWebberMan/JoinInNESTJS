@@ -1,6 +1,5 @@
 
 import { Body, Controller, Get, Post, Patch, Delete, Param, ParseIntPipe, ValidationPipe, UseGuards, Request } from '@nestjs/common';
-import type { Request as ExpressRequest } from 'express';
 import { AuthService } from './auth.service.js'
 import { CreateUserDto } from "../users/dto/create-user.dto.js"
 import { LoginAuthDto } from "./dto/login-auth.dto.js"
@@ -24,9 +23,7 @@ create(@Body(ValidationPipe) createUserDto: CreateUserDto){
 
 @UseGuards(AuthGuard)
 @Get('me')
-getUserInfo(@Request() request: ExpressRequest) {
+getUserInfo(@Request() request: any) {
     return request.user
-        
 }
-
 }

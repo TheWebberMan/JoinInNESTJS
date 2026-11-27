@@ -1,12 +1,11 @@
 export class Event {
     id: number;
-    titel: string;
-    beskrivelse: string;
+    title: string;
+    description: string;
     tag: string;
-    billede: string;   // URL til billedet
-    lat: number;
+    image: string;  
     long: number;
     host: string;
-    dato: string;      // ISO-format, f.eks. "2026-12-05T18:00:00"
-    adresse: string;
+    date: string;     
+    address: string;
 }

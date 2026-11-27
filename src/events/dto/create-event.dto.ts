@@ -3,16 +3,16 @@ import { IsString, IsNotEmpty, IsLatitude, IsLongitude } from "class-validator";
 export class CreateEventDto {
     @IsString()
     @IsNotEmpty()
-    titel: string;
+    title: string;
     @IsString()
     @IsNotEmpty()
-    beskrivelse: string;
+    description: string;
     @IsString()
     @IsNotEmpty()
     tag: string;
     @IsString()
     @IsNotEmpty()
-    billede: string;
+    image: string;
     @IsLatitude()
     lat: number;
     @IsLongitude()
@@ -22,8 +22,8 @@ export class CreateEventDto {
     host: string;
     @IsString()
     @IsNotEmpty()
-    dato: string;
+    date: string;
     @IsString()
     @IsNotEmpty()
-    adresse: string;
+    address: string;
 }
